@@ -11,7 +11,7 @@ export default function handleProfileSignup(firstName, lastName, fileName) {
         if (result.status === 'fulfilled') {
           return { status: 'fulfilled', value: result.value };
         }
-        return { status: 'rejected', value: `Error: ${fileName} cannot be processed`, };
+        return { status: 'rejected', value: `Error: ${fileName} cannot be processed` };
       });
       return processedResults;
     });
