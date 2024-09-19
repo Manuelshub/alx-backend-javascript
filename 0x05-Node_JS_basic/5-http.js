@@ -1,6 +1,5 @@
 const http = require('http');
 const fs = require('fs');
-const path = require('path');
 
 // Function to count students (from the async version)
 function countStudents(filePath) {
@@ -39,7 +38,9 @@ function countStudents(filePath) {
 
       let output = `Number of students: ${students.length}\n`;
       for (const field in fields) {
-        output += `Number of students in ${field}: ${fields[field].length}. List: ${fields[field].join(', ')}\n`;
+        if (Object.prototype.hasOwnProperty.call(fields, field)) {
+          output += `Number of students in ${field}: ${fields[field].length}. List: ${fields[field].join(', ')}\n`;
+        }
       }
 
       resolve(output.trim());
@@ -63,11 +64,11 @@ const app = http.createServer((req, res) => {
     countStudents(databasePath)
       .then((result) => {
         res.write(result);
-        res.end();  // End the response when the data is fully written
+        res.end(); // End the response when the data is fully written
       })
       .catch((error) => {
         res.write(error.message);
-        res.end();  // End the response even on error
+        res.end(); // End the response even on error
       });
   } else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
