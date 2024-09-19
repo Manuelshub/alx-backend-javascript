@@ -19,7 +19,7 @@ function countStudents(path) {
       const studentsByField = {};
 
       // Loop through each line (skipping the header)
-      for (let i = 1; i < lines.length; i++) {
+      for (let i = 1; i < lines.length; i += 1) {
         const studentData = lines[i].split(',');
 
         // Ensure that we have the correct number of columns
@@ -36,7 +36,8 @@ function countStudents(path) {
       }
 
       // Log total number of students
-      const totalStudents = Object.values(studentsByField).reduce((sum, students) => sum + students.length, 0);
+      const totalStudents = Object.values(studentsByField)
+        .reduce((sum, students) => sum + students.length, 0);
       console.log(`Number of students: ${totalStudents}`);
 
       // Log number of students per field and their names
