@@ -1,57 +1,47 @@
 const http = require('http');
-const fs = require('fs');
-const { argv } = require('process');
-
-function countStudents(path, stream) {
-  if (fs.existsSync(path)) {
-    const data = fs.readFileSync(path, 'utf8');
-    const result = [];
-    data.split('\n').forEach((data) => {
-      result.push(data.split(','));
-    });
-    result.shift();
-    const newis = [];
-    result.forEach((data) => newis.push([data[0], data[3]]));
-    const fields = new Set();
-    newis.forEach((item) => fields.add(item[1]));
-    const final = {};
-    fields.forEach((data) => { (final[data] = 0); });
-    newis.forEach((data) => { (final[data[1]] += 1); });
-    stream.write(`Number of students: ${result.length}\n`);
-    const temp = [];
-    Object.keys(final).forEach((data) => temp.push(`Number of students in ${data}: ${final[data]}. List: ${newis.filter((n) => n[1] === data).map((n) => n[0]).join(', ')}\n`));
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < temp.length; i++) {
-      if (i === temp.length - 1) {
-        temp[i] = temp[i].replace(/(\r\n|\n|\r)/gm, '');
-      }
-      stream.write(temp[i]);
-    }
-  } else { throw new Error('Cannot load the database'); }
-}
+const countStudents = require('./3-read_file_async'); // Import the countStudents function
+const url = require('url');
 
 const hostname = 'localhost';
 const port = 1245;
 
+// Create the HTTP server
 const app = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  const { url } = req;
-  if (url === '/') {
-    res.write('Hello Holberton School!');
-    res.end();
-  }
-  if (url === '/students') {
+  const parsedUrl = url.parse(req.url, true);
+
+  if (parsedUrl.pathname === '/') {
+    // Handle the root URL path "/"
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Hello Holberton School!');
+  } else if (parsedUrl.pathname === '/students') {
+    // Handle the "/students" URL path
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.write('This is the list of our students\n');
-    try {
-      countStudents(argv[2], res);
-      res.end();
-    } catch (err) {
-      res.end(err.message);
-    }
+
+    // Retrieve the path to the database from the command-line arguments
+    const databasePath = process.argv[2];
+
+    // Call the countStudents function and process the results
+    countStudents(databasePath)
+      .then(() => {
+        // Success: Students are already logged by the countStudents function
+        res.end(); // End the response after students have been listed
+      })
+      .catch((error) => {
+        // If there was an error, display an appropriate message
+        res.end(`${error.message}`);
+      });
+  } else {
+    // Handle undefined routes
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not Found');
   }
 });
 
-app.listen(port, hostname);
+// Make the server listen on port 1245
+app.listen(port, hostname, () => {
+  console.log('Server running at http://' + hostname + ':' + port);
+});
 
+// Export the app for testing or further use
 module.exports = app;
